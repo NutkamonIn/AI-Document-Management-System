@@ -21,7 +21,7 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Generate Prisma Client
         run: npx prisma generate
@@ -29,10 +29,10 @@ jobs:
       - name: TypeScript Static Type Checking
         run: npx tsc --noEmit
 
-      - name: Run Vitest Automated Test Suite (Levels 1-3)
+      - name: Run Vitest Automated Test Suite
         run: npm test
 
-      - name: Next.js Production Build Test
+      - name: Next.js Production Build Validation
         run: npm run build
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/dummy"
