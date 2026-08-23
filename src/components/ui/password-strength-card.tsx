@@ -9,11 +9,11 @@ interface PasswordStrengthCardProps {
 export function PasswordStrengthCard({ password }: PasswordStrengthCardProps) {
   if (!password) return null;
 
-  const isEnglishOnly = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/.test(password);
+  const isEnglishOnly = /^[\x21-\x7E]*$/.test(password);
   const hasMinLength = password.length >= 8;
   const hasLowerCase = /[a-z]/.test(password);
   const hasUpperCase = /[A-Z]/.test(password);
-  const hasNumberOrSymbol = /[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+  const hasNumberOrSymbol = /[0-9!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]/.test(password);
 
   const passedCount = [isEnglishOnly, hasMinLength, hasLowerCase, hasUpperCase, hasNumberOrSymbol].filter(Boolean).length;
 

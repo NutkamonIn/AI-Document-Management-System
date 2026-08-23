@@ -64,7 +64,7 @@ export async function PUT(req: Request) {
         return NextResponse.json({ error: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' }, { status: 400 });
       }
 
-      const isEnglishOnly = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(newPassword);
+      const isEnglishOnly = /^[\x21-\x7E]+$/.test(newPassword);
       if (!isEnglishOnly) {
         return NextResponse.json(
           { error: 'รหัสผ่านต้องเป็นตัวอักษรภาษาอังกฤษ ตัวเลข หรือสัญลักษณ์มาตรฐานเท่านั้น (ไม่อนุญาตภาษาไทย)' },

@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const isEnglishOnly = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(password);
+    const isEnglishOnly = /^[\x21-\x7E]+$/.test(password);
     if (!isEnglishOnly) {
       return NextResponse.json(
         { error: 'รหัสผ่านต้องเป็นตัวอักษรภาษาอังกฤษ ตัวเลข หรือสัญลักษณ์มาตรฐานเท่านั้น (ไม่อนุญาตภาษาไทย)' },
