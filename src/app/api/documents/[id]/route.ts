@@ -29,9 +29,8 @@ export async function DELETE(
     const fileName = path.basename(decodedPath);
 
     const possiblePaths = [
-      path.join(process.cwd(), decodedPath),
       path.join(process.cwd(), 'uploads', fileName),
-      path.join(process.cwd(), 'upload', fileName),
+      path.join(process.cwd(), 'uploads', decodedPath),
     ];
 
     let deletedCount = 0;

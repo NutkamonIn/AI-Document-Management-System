@@ -25,8 +25,8 @@ export async function cleanupExpiredDocuments() {
       const fileName = path.basename(decodedPath);
 
       const possiblePaths = [
-        path.join(process.cwd(), decodedPath),
         path.join(process.cwd(), 'uploads', fileName),
+        path.join(process.cwd(), 'uploads', decodedPath),
       ];
 
       for (const p of possiblePaths) {
