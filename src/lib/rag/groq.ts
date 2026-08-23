@@ -78,7 +78,9 @@ export async function streamGroqChat(
 
             try {
               const parsed = JSON.parse(jsonStr);
-              const tokenContent = parsed.choices?.[0]?.delta?.content;
+              const tokenContent =
+                parsed.choices?.[0]?.delta?.content ||
+                parsed.choices?.[0]?.delta?.reasoning;
               if (tokenContent) {
                 const tokenLine = JSON.stringify({ type: 'token', content: tokenContent }) + '\n';
                 controller.enqueue(encoder.encode(tokenLine));
@@ -91,7 +93,9 @@ export async function streamGroqChat(
           const jsonStr = buffer.trim().replace(/^data:\s*/, '');
           try {
             const parsed = JSON.parse(jsonStr);
-            const tokenContent = parsed.choices?.[0]?.delta?.content;
+            const tokenContent =
+              parsed.choices?.[0]?.delta?.content ||
+              parsed.choices?.[0]?.delta?.reasoning;
             if (tokenContent) {
               const tokenLine = JSON.stringify({ type: 'token', content: tokenContent }) + '\n';
               controller.enqueue(encoder.encode(tokenLine));
