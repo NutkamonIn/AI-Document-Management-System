@@ -14,7 +14,8 @@ AI Document Management System transforms complex, multi-page Thai and multi-ling
 - **In-App Floating Image Lightbox**: Interactive modal viewer allowing users to expand image figures in place with keyboard ESC support, click-outside dismissal, and dedicated close control.
 - **Automated Mermaid Flowchart Generation**: Converts procedural document workflows into visual Mermaid diagrams automatically within chat responses.
 - **Ultrawide Monitor Support (`max-w-[2560px]`)**: Fluid responsive dashboard and chat interfaces tailored for multi-column ultra-high-resolution displays up to 2560px width.
-- **Zero Local Storage Security Model**: Processes PDF buffers entirely in-memory and stores encrypted binary payload records on Neon Cloud PostgreSQL without leaving transient files on disk.
+- **Zero Local Storage Security**: Processes PDF buffers entirely in-memory and stores encrypted binary payload records on Neon Cloud PostgreSQL without leaving transient files on disk.
+- **Automated Daily Quota Reset**: AI API token and request quotas reset automatically at 07:00 AM ICT (00:00 UTC) every 24 hours.
 
 ---
 
@@ -43,31 +44,15 @@ flowchart TD
 
 ---
 
-## Key Features
+## Key Features & Technology Stack
 
-### 1. Document Processing & Multi-Modal RAG Pipeline
-- In-memory PDF parsing and chunking with 1536-dimensional vector embedding generation.
-- Recursive XObject image extraction supporting FlateDecode zlib stream decompression and Sharp PNG encoding.
-- Real-time document list synchronization with 2-second background polling without manual page refresh.
+### Key Features:
+1. **Multi-Modal RAG Pipeline**: In-memory PDF parsing, 1536-dimensional vector embedding generation, FlateDecode zlib stream decompression, and Sharp PNG encoding.
+2. **Intelligent AI Chat & Citation Engine**: Contextual question-answering grounded to uploaded PDF context with automatic image tag injection and fallback execution (`groq/compound`).
+3. **Rich Markdown & Visualizations**: Markdown headers, tables, code blocks, floating image lightbox overlay, and automated Mermaid flowcharts.
+4. **Quota Capacity Tracking**: Real-time capacity meters with high-precision decimal percentage display and baseline synchronization.
 
-### 2. Intelligent AI Chat & Citation Engine
-- Contextual question-answering with strict grounding to uploaded PDF context.
-- Automatic image tag injection referencing extracted figures from matching document pages.
-- Resilient model execution with automatic model fallback to `groq/compound` upon upstream provider status errors.
-
-### 3. Rich Markdown & Interactive Visualizations
-- Complete Markdown rendering including headers, tables, code blocks, lists, and blockquotes.
-- Floating image lightbox overlay supporting multi-modal document figure inspection.
-- Automated Mermaid flowchart parsing and SVG rendering for document procedures.
-
-### 4. Quota Tracking & Capacity Monitoring
-- Real-time capacity meters with high-precision decimal percentage display.
-- Automatic daily quota reset at 07:00 AM ICT (00:00 UTC).
-- Synchronization with Groq Cloud Console dashboard usage baselines.
-
----
-
-## Technology Stack
+### Technology Stack:
 
 | Layer | Technology |
 | :--- | :--- |
@@ -76,8 +61,9 @@ flowchart TD
 | **Authentication** | NextAuth.js (Auth.js v5) |
 | **Database & Vector** | Neon Cloud PostgreSQL, Prisma ORM, pgvector Extension |
 | **AI Providers** | Groq Cloud API (`groq/compound`), Google Gemini 1.5, Ollama |
-| **Image Engine** | Sharp, Zlib, pdf-lib, pdf-parse |
+| **Image Processing** | Sharp, Zlib, pdf-lib, pdf-parse |
 | **Diagram Engine** | Mermaid.js 11 |
+| **Testing Engine** | Vitest 3.0 |
 
 ---
 
@@ -104,7 +90,7 @@ OLLAMA_CHAT_MODEL="llama3.2"
 
 ---
 
-## Installation & Setup Guide
+## Installation, Setup & Testing Guide
 
 ### 1. Clone Repository & Install Dependencies
 ```bash
@@ -119,7 +105,12 @@ npx prisma db push
 npx prisma generate
 ```
 
-### 3. Run Development Server
+### 3. Execute Automated Test Suite (Levels 1 - 3)
+```bash
+npm test
+```
+
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
@@ -128,71 +119,21 @@ Access the application in your browser at: `http://localhost:3000`
 
 ---
 
-## Testing & Quality Assurance
-
-The platform includes an enterprise Vitest automated test suite covering Unit Tests (Level 1), Integration Tests (Level 2), and API Route Contracts (Level 3).
-
-### Execute Test Suite:
-```bash
-npm test
-```
-
-### Execute Test Watch Mode:
-```bash
-npm run test:watch
-```
-
----
-
-## Continuous Integration & Delivery (CI/CD)
-
-An automated GitHub Actions workflow (`.github/workflows/ci.yml`) triggers on every `push` and `pull_request` to `main`:
-- Static Type Checking (`npx tsc --noEmit`)
-- Automated Vitest Suite Execution (`npm test`)
-- Next.js Production Build Validation (`npm run build`)
-
-
----
-
 ## Project Directory Structure
 
 ```text
 AI-Document-Management-System/
-├── .github/
-│   └── workflows/
-│       └── ci.yml           # GitHub Actions CI/CD Pipeline
 ├── src/
-│   ├── app/
-│   │   ├── (auth)/          # Authentication pages (login, register)
-│   │   ├── (dashboard)/     # Core application pages (dashboard, documents, chat, settings)
-│   │   └── api/             # Next.js Route Handlers (chat, documents, images, usage)
-│   ├── components/
-│   │   ├── ui/              # MarkdownRenderer, MermaidDiagram, CapacityMeter
-│   │   └── layout/          # Navigation, Sidebar, Header components
-│   ├── context/             # React Context Providers (ChatContext, AuthContext)
-│   └── lib/
-│       ├── prisma.ts        # PrismaClient Singleton Instance
-│       └── rag/             # RAG Processor, Chunking, Vector Search & Quota Tracker
-├── prisma/
-│   └── schema.prisma        # Prisma Database Schema Specification
+│   ├── app/                 # Next.js 15 App Router pages and API routes
+│   ├── components/          # UI components (MarkdownRenderer, MermaidDiagram)
+│   ├── context/             # React Context providers (ChatContext, AuthContext)
+│   └── lib/                 # Core RAG processor, Vector Search, Quota Tracker
+├── prisma/                  # Prisma ORM schema and database migrations
 ├── public/                  # Static assets and PWA icons
-├── uploads/                 # Temporary in-memory buffers directory
-├── vitest.config.ts         # Vitest automated test suite configuration
-├── package.json             # Dependencies, scripts, and test commands
-├── tsconfig.json            # TypeScript configuration
-├── next.config.ts           # Next.js configuration
-├── docker-compose.yml       # Docker deployment specification
+├── uploads/                 # Temporary in-memory buffer directory (.gitkeep)
 ├── LICENSE                  # MIT License
 └── README.md                # Master project documentation
 ```
-
----
-
-## Security & Data Privacy Directives
-
-1. **Zero Local Disk Retention**: Uploaded PDF buffers and extracted image artifacts are processed exclusively in volatile memory and stored in Neon Cloud PostgreSQL, preventing local disk data leakage.
-2. **Automated Daily Quota Reset**: AI API token and request quotas reset automatically at 07:00 AM ICT (00:00 UTC) every 24 hours to guarantee continuous service availability.
-
 
 ---
 
