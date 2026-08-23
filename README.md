@@ -128,10 +128,39 @@ Access the application in your browser at: `http://localhost:3000`
 
 ---
 
+## Testing & Quality Assurance
+
+The platform includes an enterprise Vitest automated test suite covering Unit Tests (Level 1), Integration Tests (Level 2), and API Route Contracts (Level 3).
+
+### Execute Test Suite:
+```bash
+npm test
+```
+
+### Execute Test Watch Mode:
+```bash
+npm run test:watch
+```
+
+---
+
+## Continuous Integration & Delivery (CI/CD)
+
+An automated GitHub Actions workflow (`.github/workflows/ci.yml`) triggers on every `push` and `pull_request` to `main`:
+- Static Type Checking (`npx tsc --noEmit`)
+- Automated Vitest Suite Execution (`npm test`)
+- Next.js Production Build Validation (`npm run build`)
+
+
+---
+
 ## Project Directory Structure
 
 ```text
 AI-Document-Management-System/
+├── .github/
+│   └── workflows/
+│       └── ci.yml           # GitHub Actions CI/CD Pipeline
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/          # Authentication pages (login, register)
@@ -148,12 +177,13 @@ AI-Document-Management-System/
 │   └── schema.prisma        # Prisma Database Schema Specification
 ├── public/                  # Static assets and PWA icons
 ├── uploads/                 # Temporary in-memory buffers directory
-├── package.json             # Dependencies and scripts configuration
+├── vitest.config.ts         # Vitest automated test suite configuration
+├── package.json             # Dependencies, scripts, and test commands
 ├── tsconfig.json            # TypeScript configuration
 ├── next.config.ts           # Next.js configuration
 ├── docker-compose.yml       # Docker deployment specification
 ├── LICENSE                  # MIT License
-└── README.md                # Project documentation
+└── README.md                # Master project documentation
 ```
 
 ---
