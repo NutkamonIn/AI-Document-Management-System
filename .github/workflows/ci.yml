@@ -1,0 +1,40 @@
+name: Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-assurance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: TypeScript Static Type Checking
+        run: npx tsc --noEmit
+
+      - name: Run Vitest Automated Test Suite (Levels 1-3)
+        run: npm test
+
+      - name: Next.js Production Build Test
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/dummy"
+          NEXTAUTH_SECRET: "ci-pipeline-test-secret"
+          GROQ_API_KEY: "ci-pipeline-test-key"
