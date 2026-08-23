@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { findRelevantChunks } from '@/lib/rag/similarity-search';
 import { streamGeminiChat } from '@/lib/rag/gemini';
 import { streamGroqChat } from '@/lib/rag/groq';

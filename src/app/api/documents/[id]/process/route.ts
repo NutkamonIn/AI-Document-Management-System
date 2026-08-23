@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import fs from 'fs/promises';
 import path from 'path';
 import { processDocumentRAG } from '@/lib/rag/processor';
