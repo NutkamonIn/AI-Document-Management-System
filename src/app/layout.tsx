@@ -4,7 +4,7 @@ import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 import { PwaInstallPrompt } from '@/components/ui/pwa-install-prompt';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'AI Document Management System',

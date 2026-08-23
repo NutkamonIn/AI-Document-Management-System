@@ -8,10 +8,15 @@ const authPaths = ['/login', '/register'];
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  let token = null;
+  try {
+    token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET || 'OvsWmukK8afTnRU+qSLs4OKS+BZ0tPVMt3keZGRgr4s=',
+    });
+  } catch (err) {
+    console.error('Middleware getToken error:', err);
+  }
 
   const isAuthenticated = !!token;
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
