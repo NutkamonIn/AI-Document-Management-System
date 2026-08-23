@@ -1,24 +1,13 @@
+import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 
 const protectedPaths = ['/dashboard', '/documents', '/chat', '/settings', '/admin'];
 const authPaths = ['/login', '/register'];
 
-export async function middleware(req: NextRequest) {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
+  const isAuthenticated = !!req.auth;
 
-  let token = null;
-  try {
-    token = await getToken({
-      req,
-      secret: process.env.NEXTAUTH_SECRET || 'OvsWmukK8afTnRU+qSLs4OKS+BZ0tPVMt3keZGRgr4s=',
-    });
-  } catch (err) {
-    console.error('Middleware getToken error:', err);
-  }
-
-  const isAuthenticated = !!token;
   const isProtectedPath = protectedPaths.some((path) => pathname.startsWith(path));
   const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
 
@@ -35,7 +24,7 @@ export async function middleware(req: NextRequest) {
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
