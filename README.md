@@ -188,11 +188,11 @@ AI-Document-Management-System/
 
 ---
 
-## System Governance & Compliance Directives
+## Security & Data Privacy Directives
 
-1. **Strict No-Emoji Enforcement**: The codebase, UI strings, and AI prompts adhere strictly to a zero-emoji policy for professional enterprise aesthetic consistency.
-2. **Zero Local Disk Retention**: Uploaded PDF buffers and extracted image artifacts are processed exclusively in volatile memory and stored in Neon Cloud PostgreSQL.
-3. **Automated Daily Reset**: AI API token and request quotas reset automatically at 07:00 AM ICT (00:00 UTC) every 24 hours.
+1. **Zero Local Disk Retention**: Uploaded PDF buffers and extracted image artifacts are processed exclusively in volatile memory and stored in Neon Cloud PostgreSQL, preventing local disk data leakage.
+2. **Automated Daily Quota Reset**: AI API token and request quotas reset automatically at 07:00 AM ICT (00:00 UTC) every 24 hours to guarantee continuous service availability.
+
 
 ---
 
