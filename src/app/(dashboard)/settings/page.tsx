@@ -220,12 +220,14 @@ export default function SettingsPage() {
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
         </div>
       ) : (
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-full sm:max-w-md mb-6 bg-gray-200/70 p-1 rounded-xl">
-            <TabsTrigger value="profile" className="text-xs sm:text-sm font-semibold">โปรไฟล์</TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs sm:text-sm font-semibold">โมเดล AI</TabsTrigger>
-            <TabsTrigger value="storage" className="text-xs sm:text-sm font-semibold">พื้นที่และระบบ</TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="profile" className="w-full space-y-6">
+          <div className="w-full border-b border-gray-200/80 pb-4">
+            <TabsList className="grid w-full grid-cols-3 max-w-xl bg-gray-100 p-1.5 rounded-xl border border-gray-200/80 shadow-xs">
+              <TabsTrigger value="profile" className="text-xs sm:text-sm font-semibold py-2">โปรไฟล์</TabsTrigger>
+              <TabsTrigger value="ai" className="text-xs sm:text-sm font-semibold py-2">โมเดล AI</TabsTrigger>
+              <TabsTrigger value="storage" className="text-xs sm:text-sm font-semibold py-2">พื้นที่และระบบ</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* TAB 1: โปรไฟล์และการรักษาความปลอดภัย */}
           <TabsContent value="profile" className="space-y-6 w-full">
