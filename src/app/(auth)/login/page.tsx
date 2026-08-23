@@ -41,13 +41,12 @@ function LoginForm() {
 
       if (res?.error) {
         setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        setLoading(false);
       } else {
-        router.push('/dashboard');
-        router.refresh();
+        window.location.href = '/dashboard';
       }
     } catch (err) {
       setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
-    } finally {
       setLoading(false);
     }
   };
