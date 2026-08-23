@@ -10,10 +10,10 @@ AI Document Management System transforms complex, multi-page Thai and multi-ling
 
 ### Core Capabilities:
 - **Precision Page-Level Citations**: Every AI response cites authoritative source document names and exact page numbers.
-- **Automated PDF Image Extraction**: Scans XObject and Form XObject trees to extract embedded images (DCTDecode, FlateDecode) and converts them into standardized PNG files via Sharp.
+- **Automated PDF Image Extraction**: Scans XObject trees to extract embedded images (DCTDecode, FlateDecode) and converts them into standardized PNG files via Sharp.
 - **In-App Floating Image Lightbox**: Interactive modal viewer allowing users to expand image figures in place with keyboard ESC support, click-outside dismissal, and dedicated close control.
 - **Automated Mermaid Flowchart Generation**: Converts procedural document workflows into visual Mermaid diagrams automatically within chat responses.
-- **Ultrawide Monitor Support (`max-w-[2560px]`)**: Fluid responsive dashboard and chat interfaces tailored for multi-column ultra-high-resolution displays up to 2560px width.
+- **Responsive Enterprise UI**: Fully responsive dashboard and chat interfaces optimized across mobile, desktop, and high-resolution displays.
 - **Zero Local Storage Security**: Processes PDF buffers entirely in-memory and stores encrypted binary payload records on Neon Cloud PostgreSQL without leaving transient files on disk.
 - **Automated Daily Quota Reset**: AI API token and request quotas reset automatically at 07:00 AM ICT (00:00 UTC) every 24 hours.
 
@@ -47,23 +47,22 @@ flowchart TD
 ## Key Features & Technology Stack
 
 ### Key Features:
-1. **Multi-Modal RAG Pipeline**: In-memory PDF parsing, 1536-dimensional vector embedding generation, FlateDecode zlib stream decompression, and Sharp PNG encoding.
-2. **Intelligent AI Chat & Citation Engine**: Contextual question-answering grounded to uploaded PDF context with automatic image tag injection and fallback execution (`groq/compound`).
-3. **Rich Markdown & Visualizations**: Markdown headers, tables, code blocks, floating image lightbox overlay, and automated Mermaid flowcharts.
-4. **Quota Capacity Tracking**: Real-time capacity meters with high-precision decimal percentage display and baseline synchronization.
+1. **Multi-Modal RAG & Citation Engine**: In-memory PDF parsing, 1536-dimensional vector embedding search, page-level citations, and Sharp PNG image figure previews.
+2. **Interactive Document Visualizations**: In-app floating image lightbox modal viewer and automated Mermaid flowchart diagram parsing.
+3. **Quota Capacity Monitoring**: Real-time capacity meters with high-precision decimal percentage display and automated daily reset at 07:00 AM ICT (00:00 UTC).
 
 ### Technology Stack:
 
 | Layer | Technology |
 | :--- | :--- |
 | **Frontend Framework** | Next.js 15 (App Router), React 19, TypeScript |
-| **Styling & UI** | Tailwind CSS, Lucide React Icons, Custom Tailwind Plugins |
+| **Styling & UI** | Tailwind CSS, Lucide React Icons |
 | **Authentication** | NextAuth.js (Auth.js v5) |
 | **Database & Vector** | Neon Cloud PostgreSQL, Prisma ORM, pgvector Extension |
 | **AI Providers** | Groq Cloud API (`groq/compound`), Google Gemini 1.5, Ollama |
 | **Image Processing** | Sharp, Zlib, pdf-lib, pdf-parse |
 | **Diagram Engine** | Mermaid.js 11 |
-| **Testing Engine** | Vitest 3.0 |
+| **Testing Framework** | Vitest 3.0 |
 
 ---
 
@@ -105,7 +104,7 @@ npx prisma db push
 npx prisma generate
 ```
 
-### 3. Execute Automated Test Suite (Levels 1 - 3)
+### 3. Execute Automated Test Suite
 ```bash
 npm test
 ```
@@ -123,16 +122,12 @@ Access the application in your browser at: `http://localhost:3000`
 
 ```text
 AI-Document-Management-System/
-├── src/
-│   ├── app/                 # Next.js 15 App Router pages and API routes
-│   ├── components/          # UI components (MarkdownRenderer, MermaidDiagram)
-│   ├── context/             # React Context providers (ChatContext, AuthContext)
-│   └── lib/                 # Core RAG processor, Vector Search, Quota Tracker
-├── prisma/                  # Prisma ORM schema and database migrations
-├── public/                  # Static assets and PWA icons
-├── uploads/                 # Temporary in-memory buffer directory (.gitkeep)
-├── LICENSE                  # MIT License
-└── README.md                # Master project documentation
+├── src/                 # Next.js 15 App Router pages, components, and API routes
+├── prisma/              # Prisma ORM schema and database migrations
+├── public/              # Static assets and PWA icons
+├── uploads/             # Temporary in-memory buffer directory (.gitkeep)
+├── LICENSE              # MIT License
+└── README.md            # Master project documentation
 ```
 
 ---
