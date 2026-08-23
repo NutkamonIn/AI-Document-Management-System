@@ -1,14 +1,12 @@
 # Dependencies
-node_modules/
-frontend/node_modules/
+/node_modules
+/.pnp
+.pnp.*
 
-# Next.js Build Artifacts
-.next/
-frontend/.next/
-out/
-frontend/out/
-build/
-frontend/build/
+# Next.js Build Output
+/.next/
+/out/
+/build
 
 # Environment Variables & Secret Credentials (CRITICAL FOR SECURITY)
 .env
@@ -17,48 +15,31 @@ frontend/build/
 .env.test.local
 .env.production.local
 .env*.local
-frontend/.env
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
-frontend/.env*.local
 
-# Temporary Uploads & Local Quota Tracking Files
-uploads/*
-!uploads/.gitkeep
-frontend/uploads/*
-!frontend/uploads/.gitkeep
+# Temporary Uploads & Quota Storage
+/uploads/*
+!/uploads/.gitkeep
 
-# OS & System Files
+# System & OS Files
 .DS_Store
 .DS_Store?
 ._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+*.pem
 
 # Logs & Debugging
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# IDE & Text Editor Files
+# IDE & Editors
 .vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.swp
 
-# TypeScript & Build Cache
+# Vercel
+.vercel
+
+# TypeScript & Build Artifacts
 *.tsbuildinfo
-frontend/*.tsbuildinfo
-
-# Prisma Build Outputs
-src/generated/prisma
-frontend/src/generated/prisma
+next-env.d.ts
+/src/generated/prisma

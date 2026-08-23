@@ -22,7 +22,7 @@ AI Document Management System transforms complex, multi-page Thai and multi-ling
 
 ```mermaid
 flowchart TD
-    A["Client Web Browser"] --> B["Next.js 15 App Router (Frontend)"]
+    A["Client Web Browser"] --> B["Next.js 15 App Router (Full-Stack App)"]
     B --> C["Next.js API Route Handlers"]
     C --> D["NextAuth.js (Auth & Session Control)"]
     
@@ -81,24 +81,9 @@ flowchart TD
 
 ---
 
-## Database Schema
-
-```text
-User
- ├── id, email, name, role, createdAt
- ├── Documents
- │    ├── id, name, fileUrl, fileSize, status, ownerId
- │    ├── DocumentChunks (content, pageNumber, embedding vector)
- │    └── DocumentImages (pageNumber, dataUrl PNG)
- └── ChatSessions
-      └── ChatMessages (role, content, sources)
-```
-
----
-
 ## Environment Variables Configuration
 
-Create a `.env` or `.env.local` file inside the `frontend/` directory:
+Create a `.env` or `.env.local` file in the root directory:
 
 ```env
 # PostgreSQL Connection String (Neon Cloud with pgvector)
@@ -124,7 +109,7 @@ OLLAMA_CHAT_MODEL="llama3.2"
 ### 1. Clone Repository & Install Dependencies
 ```bash
 git clone <repository-url>
-cd AI-Document-Management-System/frontend
+cd AI-Document-Management-System
 npm install
 ```
 
@@ -146,7 +131,7 @@ Access the application in your browser at: `http://localhost:3000`
 ## Project Directory Structure
 
 ```text
-frontend/
+AI-Document-Management-System/
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/          # Authentication pages (login, register)
@@ -161,7 +146,14 @@ frontend/
 │       └── rag/             # RAG Processor, Chunking, Vector Search & Quota Tracker
 ├── prisma/
 │   └── schema.prisma        # Prisma Database Schema Specification
-└── README.md
+├── public/                  # Static assets and PWA icons
+├── uploads/                 # Temporary in-memory buffers directory
+├── package.json             # Dependencies and scripts configuration
+├── tsconfig.json            # TypeScript configuration
+├── next.config.ts           # Next.js configuration
+├── docker-compose.yml       # Docker deployment specification
+├── LICENSE                  # MIT License
+└── README.md                # Project documentation
 ```
 
 ---
@@ -177,4 +169,3 @@ frontend/
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
