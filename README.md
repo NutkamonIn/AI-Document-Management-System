@@ -87,7 +87,7 @@ Create a `.env` or `.env.local` file in the root directory:
 
 ```env
 # PostgreSQL Connection String (Neon Cloud with pgvector)
-DATABASE_URL="postgresql://neondb_owner:npg_pbTU5ECG8jva@ep-wispy-star-ay6klfbi-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DATABASE_URL="postgresql://username:password@ep-sample-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 # NextAuth Authentication Configuration
 NEXTAUTH_SECRET="your-nextauth-secret-key"
