@@ -20,6 +20,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'รองรับเฉพาะไฟล์ PDF เท่านั้น' }, { status: 400 });
     }
 
+    if (file.size > 4.5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'ไฟล์มีขนาดใหญ่เกิน 4.5 MB ซึ่งเกินขีดจำกัดของ Vercel Serverless Function' },
+        { status: 413 }
+      );
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 

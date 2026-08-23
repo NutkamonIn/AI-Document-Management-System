@@ -132,10 +132,15 @@ export default function DocumentsPage() {
     setError('');
     const newItems: BatchFileItem[] = [];
     const fileArray = Array.from(files);
+    const MAX_FILE_SIZE_BYTES = 4.5 * 1024 * 1024; // 4.5 MB Vercel Serverless Function Limit
 
     for (const f of fileArray) {
       if (f.type !== 'application/pdf') {
         setError('รองรับเฉพาะไฟล์ PDF เท่านั้น');
+        continue;
+      }
+      if (f.size > MAX_FILE_SIZE_BYTES) {
+        setError(`ไฟล์ "${f.name}" มีขนาดใหญ่เกิน 4.5 MB (${(f.size / (1024 * 1024)).toFixed(1)} MB) ซึ่งเกินขีดจำกัด 4.5 MB ของ Vercel`);
         continue;
       }
       newItems.push({
