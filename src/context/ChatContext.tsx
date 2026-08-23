@@ -34,28 +34,28 @@ export interface ChatSessionItem {
 
 export const AVAILABLE_AI_MODELS: AiModelOption[] = [
   {
-    id: 'groq/compound',
-    name: 'Groq Compound',
-    highlight: 'จุดเด่น: รวดเร็ว สมดุล เหมาะกับการถามตอบภาษาไทยทั่วไป (~0.12s)',
-    description: 'โมเดลหลัก รวดเร็ว สมดุลที่สุด เหมาะสำหรับการตอบคำถามภาษาไทย',
+    id: 'llama-3.3-70b-versatile',
+    name: 'Groq Llama 3.3 70B',
+    highlight: 'จุดเด่น: รวดเร็ว สมดุลที่สุดในการตอบภาษาไทยและวิเคราะห์เอกสาร (~500 tokens/s)',
+    description: 'โมเดลหลัก รวดเร็ว สมดุลที่สุด เหมาะสำหรับการตอบคำถามภาษาไทยและสรุปเอกสาร',
   },
   {
-    id: 'openai/gpt-oss-120b',
-    name: 'GPT OSS 120B',
-    highlight: 'จุดเด่น: คิดวิเคราะห์เชิงลึก สรุปเนื้อหาเอกสารซับซ้อน',
-    description: 'โมเดลขนาดใหญ่ 120B เน้นวิเคราะห์เชิงลึก สรุปเนื้อหาซับซ้อน',
+    id: 'llama-3.1-8b-instant',
+    name: 'Llama 3.1 8B (Speed Master)',
+    highlight: 'จุดเด่น: สปีดเร็วที่สุดระดับมิลลิวินาที ตอบกลับทันที (~800+ tokens/s)',
+    description: 'โมเดลเน้นความรวดเร็วระดับมิลลิวินาที ตอบกลับทันทีโดยไม่เสียเวลาคอย',
   },
   {
-    id: 'openai/gpt-oss-20b',
-    name: 'GPT OSS 20B',
-    highlight: 'จุดเด่น: สปีดสูงที่สุด ตอบคำถามสั้นฉับไวในระดับมิลลิวินาที',
-    description: 'โมเดลเน้นความรวดเร็วระดับมิลลิวินาที ตอบกลับทันที',
+    id: 'mixtral-8x7b-32768',
+    name: 'Mixtral 8x7B (Context 32k)',
+    highlight: 'จุดเด่น: อ่านเอกสารยาวซับซ้อน รองรับบริบทใหญ่ถึง 32k tokens',
+    description: 'โมเดลเน้นอ่านและประมวลผลไฟล์เอกสารยาวซับซ้อน',
   },
   {
-    id: 'qwen/qwen3.6-27b',
-    name: 'Qwen 3.6 27B',
-    highlight: 'จุดเด่น: ถนัดภาษาเอเชีย เข้าใจศัพท์เฉพาะทางและบริบทซับซ้อน',
-    description: 'โมเดลเก่งภาษาไทยและภาษาเอเชีย เข้าใจบริบทศัพท์เฉพาะทาง',
+    id: 'gemma2-9b-it',
+    name: 'Gemma 2 9B (Google AI)',
+    highlight: 'จุดเด่น: โมเดลประสิทธิภาพสูงจาก Google AI ตอบคำถามกระชับตรงประเด็น',
+    description: 'โมเดลความจุสูงจาก Google AI ตอบคำถามกระชับตรงประเด็น',
   },
 ];
 
@@ -98,7 +98,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<ChatSessionItem[]>([]);
 
-  const [selectedModel, setSelectedModelState] = useState<string>('groq/compound');
+  const [selectedModel, setSelectedModelState] = useState<string>('llama-3.3-70b-versatile');
   const [tokenStatus, setTokenStatus] = useState<TokenStatusType>('NORMAL');
   const [tokenStatusMessage, setTokenStatusMessage] = useState<string>('');
 

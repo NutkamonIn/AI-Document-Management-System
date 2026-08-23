@@ -1,7 +1,7 @@
 export async function streamGroqChat(
   systemInstruction: string,
   userPrompt: string,
-  selectedModel: string = 'groq/compound'
+  selectedModel: string = 'llama-3.3-70b-versatile'
 ): Promise<ReadableStream<Uint8Array>> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -9,7 +9,7 @@ export async function streamGroqChat(
   }
 
   const endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-  let activeModel = selectedModel && selectedModel.trim() ? selectedModel : 'groq/compound';
+  let activeModel = selectedModel && selectedModel.trim() ? selectedModel : 'llama-3.3-70b-versatile';
 
   const payload = {
     model: activeModel,
@@ -31,9 +31,9 @@ export async function streamGroqChat(
     body: JSON.stringify(payload),
   });
 
-  // หากโมเดลที่เลือกส่งผลกลับมาเป็น Error (เช่น 404 Model Not Found หรือ 400 Decommissioned) ให้ Fallback กลับมาเป็น 'groq/compound' อัตโนมัติ
-  if (!response.ok && activeModel !== 'groq/compound') {
-    activeModel = 'groq/compound';
+  // หากโมเดลที่เลือกส่งผลกลับมาเป็น Error (เช่น 404 Model Not Found หรือ 400 Decommissioned) ให้ Fallback กลับมาเป็น 'llama-3.3-70b-versatile' อัตโนมัติ
+  if (!response.ok && activeModel !== 'llama-3.3-70b-versatile') {
+    activeModel = 'llama-3.3-70b-versatile';
     response = await fetch(endpoint, {
       method: 'POST',
       headers: {
