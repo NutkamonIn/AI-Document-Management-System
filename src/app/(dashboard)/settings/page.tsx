@@ -60,7 +60,7 @@ interface AiQuotaUsage {
 }
 
 export default function SettingsPage() {
-  const { data: session, update: updateSession } = useSession();
+  const { data: session, status: sessionStatus, update: updateSession } = useSession();
   const { selectedModel, setSelectedModel } = useChatContext();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -123,12 +123,16 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(() => {
-      refreshAiUsage();
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    if (sessionStatus === 'authenticated') {
+      fetchData();
+      const interval = setInterval(() => {
+        refreshAiUsage();
+      }, 3000);
+      return () => clearInterval(interval);
+    } else if (sessionStatus === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [sessionStatus]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();

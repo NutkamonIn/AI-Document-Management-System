@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import { 
   Upload, 
   FileText, 
@@ -43,6 +44,7 @@ interface BatchFileItem {
 }
 
 export default function DocumentsPage() {
+  const { status: sessionStatus } = useSession();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -70,8 +72,12 @@ export default function DocumentsPage() {
   };
 
   useEffect(() => {
-    fetchDocuments();
-  }, []);
+    if (sessionStatus === 'authenticated') {
+      fetchDocuments();
+    } else if (sessionStatus === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [sessionStatus]);
 
   useEffect(() => {
     const hasProcessing = documents.some((d) => d.status === 'PENDING' || d.status === 'PROCESSING');

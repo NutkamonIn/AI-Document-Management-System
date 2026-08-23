@@ -17,7 +17,7 @@ interface DocumentItem {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const { selectedModel } = useChatContext();
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
@@ -27,6 +27,11 @@ export default function DashboardPage() {
 
   // ดึงข้อมูลเอกสารทั้งหมดและเช็กสถานะ AI Engine แบบ Real-time
   useEffect(() => {
+    if (sessionStatus !== 'authenticated') {
+      if (sessionStatus === 'unauthenticated') setLoading(false);
+      return;
+    }
+
     const fetchStats = async () => {
       try {
         const res = await fetch('/api/documents');
@@ -46,19 +51,21 @@ export default function DashboardPage() {
         const res = await fetch('/api/ai/health');
         if (res.ok) {
           const data = await res.json();
-          setAiStatus(data.status === 'ONLINE' ? 'ONLINE' : 'OFFLINE');
-          if (data.provider) setAiProviderName(data.provider);
+          setAiStatus(data.status);
+          setAiProviderName(data.providerName || 'Groq Cloud AI');
         } else {
           setAiStatus('OFFLINE');
         }
-      } catch {
+      } catch (err) {
         setAiStatus('OFFLINE');
       }
     };
 
     fetchStats();
     checkAiHealth();
-  }, []);
+    const interval = setInterval(fetchStats, 3000);
+    return () => clearInterval(interval);
+  }, [sessionStatus]);
 
   const totalDocs = documents.length;
   const completedDocs = documents.filter((d) => d.status === 'COMPLETED').length;
