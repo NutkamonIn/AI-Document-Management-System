@@ -427,10 +427,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           } catch {}
         }
 
-        const cleanedAnswer = fullAnswer
-          .replace(/^<think>[\s\S]*?<\/think>/gi, '')
-          .replace(/^(?:We need to|Let's|The document mentions|Provide summary|We have many)[\s\S]*?(?=\n\n|\n[#\*\-]|สรุป|ขออภัย|เรียน|โครงการ)/i, '')
-          .trimStart();
+        let cleanedAnswer = fullAnswer.replace(/^<think>[\s\S]*?<\/think>/gi, '');
+        if (/^[A-Za-z\s"'(),.:;!\-?]{15,}/.test(cleanedAnswer)) {
+          const linesArr = cleanedAnswer.split('\n');
+          let firstThaiIdx = -1;
+          for (let i = 0; i < linesArr.length; i++) {
+            const line = linesArr[i].trim();
+            if (/[\u0E00-\u0E7F]/.test(line) && !/^(The user|We need|We have|Let's|Provide|This is|In this|I should|As an AI)/i.test(line)) {
+              firstThaiIdx = i;
+              break;
+            }
+          }
+          if (firstThaiIdx > 0) {
+            cleanedAnswer = linesArr.slice(firstThaiIdx).join('\n');
+          }
+        }
+        cleanedAnswer = cleanedAnswer.trim();
 
         setMessages((prev) =>
           prev.map((msg) =>
