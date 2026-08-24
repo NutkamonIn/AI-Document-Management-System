@@ -427,10 +427,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           } catch {}
         }
 
+        const cleanedAnswer = fullAnswer
+          .replace(/^<think>[\s\S]*?<\/think>/gi, '')
+          .replace(/^(?:We need to|Let's|The document mentions|Provide summary|We have many)[\s\S]*?(?=\n\n|\n[#\*\-]|สรุป|ขออภัย|เรียน|โครงการ)/i, '')
+          .trimStart();
+
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === aiMessageId
-              ? { ...msg, content: fullAnswer, sources: extractedSources }
+              ? { ...msg, content: cleanedAnswer, sources: extractedSources }
               : msg
           )
         );
