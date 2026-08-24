@@ -15,11 +15,11 @@ export async function streamGroqChat(
     model: activeModel,
     messages: [
       { role: 'system', content: systemInstruction },
-      { role: 'user', content: userPrompt },
+      { role: 'user', content: userPrompt }
     ],
     stream: true,
     temperature: 0.3,
-    max_tokens: 4096,
+    max_tokens: 2048, // ลดจาก 4096 เป็น 2048 เพื่อป้องกัน Groq Reserve โควต้า TPM มากเกินไป
   };
 
   let response = await fetch(endpoint, {

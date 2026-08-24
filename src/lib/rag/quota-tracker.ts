@@ -13,9 +13,9 @@ interface QuotaStore {
 
 const QUOTA_FILE_PATH = path.join(process.cwd(), 'uploads', 'quota_usage.json');
 
-// สอดคล้องกับตัวเลขจาก Groq Cloud Console Dashboard ณ ปัจจุบัน
-const BASELINE_TOKENS = 177400;
-const BASELINE_REQUESTS = 208;
+// ตั้งค่าเริ่มต้นการใช้งานเป็น 0 เพื่อให้ระบบนับจากการใช้งานจริง (Real Data)
+const BASELINE_TOKENS = 0;
+const BASELINE_REQUESTS = 0;
 
 function getTodayKey(userId: string): string {
   const now = new Date();

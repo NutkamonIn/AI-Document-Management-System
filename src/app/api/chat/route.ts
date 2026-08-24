@@ -13,6 +13,26 @@ const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 const CHAT_MODEL = process.env.OLLAMA_CHAT_MODEL || 'llama3.2';
 const AI_PROVIDER = process.env.AI_PROVIDER || (process.env.GROQ_API_KEY ? 'groq' : process.env.GEMINI_API_KEY ? 'gemini' : 'ollama');
 
+function cleanAiResponse(fullAnswer: string): string {
+  let cleaned = fullAnswer.replace(/<think>[\s\S]*?<\/think>/gi, '');
+  if (cleaned.includes('<answer>')) {
+    cleaned = cleaned.split('<answer>')[1];
+    if (cleaned.includes('</answer>')) {
+      cleaned = cleaned.split('</answer>')[0];
+    }
+  } else {
+    const match = cleaned.match(/(?:^|\n)(#{1,6}\s*[\u0E00-\u0E7F]|[\u0E00-\u0E7F]{3,})/);
+    if (match && match.index !== undefined && match.index > 10) {
+      const prefix = cleaned.substring(0, match.index);
+      if (!/[\u0E00-\u0E7F]/.test(prefix) || prefix.length > 50) {
+        cleaned = cleaned.substring(match.index);
+      }
+    }
+  }
+  cleaned = cleaned.replace(/^(Let's craft answer|Wrap in|tags\.).*?(?=\n|$)/gmi, '');
+  return cleaned.trim();
+}
+
 async function saveMessageToDb(
   userId: string,
   role: 'user' | 'assistant',
@@ -92,7 +112,7 @@ export async function POST(req: Request) {
     const relevantChunks = await findRelevantChunks(
       message,
       session.user.id,
-      12,
+      3, // ลดเหลือแค่ 3 chunk เพื่อให้มั่นใจว่าจะไม่ทะลุ 8000 TPM แน่นอน
       Array.isArray(selectedDocumentIds) ? selectedDocumentIds : undefined
     );
 
@@ -107,18 +127,8 @@ export async function POST(req: Request) {
       });
     }
 
-    const sources: { documentName: string; pageNumber: number }[] = [];
     const matchedPageKeys = new Set(relevantChunks.map((c) => `${c.documentId}_${c.pageNumber}`));
     const targetDocIds = Array.from(new Set(relevantChunks.map((c) => c.documentId)));
-
-    const contextText = relevantChunks
-      .map((c, i) => {
-        sources.push({ documentName: c.documentName, pageNumber: c.pageNumber });
-        return `[เอกสาร ${i + 1}: ${c.documentName} หน้า ${c.pageNumber}]\n${c.content}`;
-      })
-      .join('\n\n');
-
-    const uniqueSources = Array.from(new Set(sources.map((s) => `${s.documentName} (หน้า ${s.pageNumber})`)));
 
     // ดึงเฉพาะรูปภาพประกอบตรงกับเลขหน้าของ chunks ที่ค้นพบจริงเท่านั้น
     let docImages: { id: string; pageNumber: number; documentId: string }[] = [];
@@ -139,27 +149,35 @@ export async function POST(req: Request) {
       console.error('Failed to fetch docImages via raw SQL:', err);
     }
 
-    let imageGalleryPrompt = '';
-    if (docImages.length > 0) {
-      imageGalleryPrompt =
-        '\n\n--- รายชื่อแท็กรูปภาพประกอบที่ตรงกับหน้าเอกสารอ้างอิงข้างต้น ---\n' +
-        docImages
-          .map((img) => `![ภาพประกอบ หน้า ${img.pageNumber}](/api/documents/images/${img.id})`)
-          .join('\n');
-    }
+    const sources: { documentName: string; pageNumber: number }[] = [];
+    
+    const contextText = relevantChunks
+      .map((c, i) => {
+        sources.push({ documentName: c.documentName, pageNumber: c.pageNumber });
+        const chunkImages = docImages.filter(img => img.documentId === c.documentId && img.pageNumber === c.pageNumber);
+        let imagesText = '';
+        if (chunkImages.length > 0) {
+          imagesText = `\n(แท็กรูปภาพที่อยู่ในหน้านี้: ${chunkImages.map(img => `![ภาพประกอบหน้า ${img.pageNumber}](/api/documents/images/${img.id})`).join(' ')})`;
+        }
+        return `[เอกสาร ${i + 1}: ${c.documentName} หน้า ${c.pageNumber}]\n${c.content}${imagesText}`;
+      })
+      .join('\n\n');
+
+    const uniqueSources = Array.from(new Set(sources.map((s) => `${s.documentName} (หน้า ${s.pageNumber})`)));
 
     const systemPrompt = `คุณคือผู้ช่วย AI สรุปและตอบคำถามจากเอกสารภาษาไทย โดยอ้างอิงข้อมูลจากเนื้อหาเอกสารอ้างอิงด้านล่างนี้เป็นหลัก 
 - ตอบคำถามให้ครบถ้วน ละเอียด สมบูรณ์ที่สุด ห้ามตัดจบกลางคราว ห้ามละเว้นหัวข้อสำคัญ และอธิบายหัวข้อต่างๆ ให้ชัดเจนอ่านง่าย
 - จัดรูปแบบคำตอบให้สวยงาม ใช้หัวข้อ (Markdown Headers), ตาราง (Markdown Tables), และรายการข้อๆ (Bullet points) 
 - ห้ามใส่อิโมจิในคำตอบเด็ดขาด
-- หากมีแท็กรูปภาพในรูปแบบ ![alt](url) ที่ตรงกับเนื้อหาในหน้าเอกสารนั้น ให้คงแท็กรูปภาพนั้นไว้ และนำแท็กรูปภาพมาแสดงประกอบคำตอบในตำแหน่งที่เกี่ยวข้องเสมอ
-- แสดงเฉพาะแท็กรูปภาพ ![alt](url) ที่ตรงกับหน้าเอกสารในเนื้อหาอ้างอิงเท่านั้น ห้ามแสดงรูปภาพจากหน้าอื่นที่ไม่เกี่ยวข้องกับคำถามเด็ดขาด
+- การจัดการรูปภาพ: หากมีแท็กรูปภาพในเอกสารอ้างอิง ให้นำมาแทรกในเนื้อหาที่กำลังอธิบายเพื่อประกอบความเข้าใจเท่านั้น
+- กฎเหล็กเรื่องรูปภาพ: ห้ามสร้างหัวข้อ "รูปภาพที่เกี่ยวข้อง", "แกลเลอรี่ภาพ", หรือนำรูปภาพทั้งหมดมาสรุปรวมกันเป็นตารางที่ท้ายข้อความโดยเด็ดขาด! ให้ปล่อยผ่านรูปภาพที่ไม่เกี่ยวข้องไปเลย ห้ามฝืนนำมาแสดง
 - หากมีข้อมูลในเอกสารอ้างอิง ให้สรุปคำตอบจากข้อมูลจริงนั้นทันที และห้ามต่อท้ายด้วยประโยคปฏิเสธเด็ดขาด
+- กฎเหล็กเรื่องภาษา: ห้ามพิมพ์กระบวนการคิด (Chain of Thought), ข้อความเกริ่นนำ, หรือการวางแผนเป็นภาษาอังกฤษเด็ดขาด (เช่น ห้ามพิมพ์ The system, We will, Let's craft answer ฯลฯ) ให้เริ่มพิมพ์คำตอบที่เป็นภาษาไทยทันที
 - เฉพาะกรณีที่ในเอกสารไม่มีข้อมูลเกี่ยวกับคำถามเลยจริงๆ ให้ตอบว่า "ไม่พบข้อมูลนี้ในเอกสารที่คุณอัปโหลดไว้"
+- กฎการตอบ: คุณต้องครอบคำตอบภาษาไทยของคุณด้วยแท็ก <answer> และ </answer> เสมอ! ห้ามพิมพ์คำตอบไว้นอกแท็กนี้เด็ดขาด
 
 --- ข้อมูลเอกสารอ้างอิง ---
-${contextText}
-${imageGalleryPrompt}`;
+${contextText}`;
 
     const encoder = new TextEncoder();
     const userId = session.user.id;
@@ -202,7 +220,8 @@ ${imageGalleryPrompt}`;
             controller.error(err);
           } finally {
             if (fullAnswer.trim()) {
-              await saveMessageToDb(userId, 'assistant', fullAnswer, activeSessionId || undefined, uniqueSources);
+              const cleanedAnswer = cleanAiResponse(fullAnswer);
+              await saveMessageToDb(userId, 'assistant', cleanedAnswer || fullAnswer, activeSessionId || undefined, uniqueSources);
               const promptTokens = Math.round((systemPrompt.length + message.length) * 1.2);
               const completionTokens = Math.round(fullAnswer.length * 1.5);
               await recordTokenUsage(userId, promptTokens + completionTokens);
@@ -258,7 +277,8 @@ ${imageGalleryPrompt}`;
             controller.error(err);
           } finally {
             if (fullAnswer.trim()) {
-              await saveMessageToDb(userId, 'assistant', fullAnswer, activeSessionId || undefined, uniqueSources);
+              const cleanedAnswer = cleanAiResponse(fullAnswer);
+              await saveMessageToDb(userId, 'assistant', cleanedAnswer || fullAnswer, activeSessionId || undefined, uniqueSources);
               const promptTokens = Math.round((systemPrompt.length + message.length) * 1.2);
               const completionTokens = Math.round(fullAnswer.length * 1.5);
               await recordTokenUsage(userId, promptTokens + completionTokens);
@@ -342,7 +362,8 @@ ${imageGalleryPrompt}`;
           controller.error(err);
         } finally {
           if (fullAnswer.trim()) {
-            await saveMessageToDb(userId, 'assistant', fullAnswer, activeSessionId || undefined, uniqueSources);
+            const cleanedAnswer = cleanAiResponse(fullAnswer);
+            await saveMessageToDb(userId, 'assistant', cleanedAnswer || fullAnswer, activeSessionId || undefined, uniqueSources);
             const promptTokens = Math.round((systemPrompt.length + message.length) * 1.2);
             const completionTokens = Math.round(fullAnswer.length * 1.5);
             await recordTokenUsage(userId, promptTokens + completionTokens);

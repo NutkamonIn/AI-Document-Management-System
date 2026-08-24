@@ -202,9 +202,9 @@ export default function SettingsPage() {
     }
   };
 
-  const getMeterColor = (percentageRemaining: number) => {
-    if (percentageRemaining <= 10) return 'bg-red-500';
-    if (percentageRemaining <= 25) return 'bg-amber-500';
+  const getMeterColor = (percentageUsed: number) => {
+    if (percentageUsed >= 90) return 'bg-red-500';
+    if (percentageUsed >= 75) return 'bg-amber-500';
     return 'bg-blue-600';
   };
 
@@ -392,7 +392,7 @@ export default function SettingsPage() {
               <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <CardTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-yellow-500" /> โควต้า Token คงเหลือ (Groq Cloud AI)
+                    <Zap className="h-5 w-5 text-yellow-500" /> โควต้า Token คงเหลือ
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">เช็กจำนวน Token และคำขอใช้งาน AI คงเหลือแบบ Real-time</CardDescription>
                 </div>
@@ -426,23 +426,23 @@ export default function SettingsPage() {
                       <div className="p-4 rounded-xl border border-blue-100 bg-blue-50/40 space-y-2">
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 text-xs sm:text-sm font-semibold">
                           <span className="text-blue-900 flex items-center gap-1.5">
-                            <Gauge className="h-4 w-4 text-blue-600 shrink-0" /> 500,000 Tokens รายวันคงเหลือ
+                            <Gauge className="h-4 w-4 text-blue-600 shrink-0" /> โควต้า Tokens รายวัน
                           </span>
                           <span className="text-blue-700 font-mono">
-                            {aiUsage.tokens.remaining.toLocaleString()} / {aiUsage.tokens.limit.toLocaleString()} Tokens
+                            {(aiUsage.tokens.used || 0).toLocaleString()} / {aiUsage.tokens.limit.toLocaleString()} Tokens
                           </span>
                         </div>
 
-                        {/* Progress Bar representing Capacity Remaining */}
+                        {/* Progress Bar representing Capacity Used */}
                         <div className="w-full bg-slate-200 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-300/60 shadow-inner">
                           <div
-                            className={`h-2.5 rounded-full transition-all duration-500 ${getMeterColor(tokenRemPct)}`}
-                            style={{ width: `${tokenRemPct}%` }}
+                            className={`h-2.5 rounded-full transition-all duration-500 ${getMeterColor(tokenUsedPct)}`}
+                            style={{ width: `${tokenUsedPct}%` }}
                           />
                         </div>
 
                         <div className="flex justify-between items-center text-xs font-medium text-blue-800 pt-1">
-                          <span>ความจุคงเหลือ: <strong className="text-blue-950 font-bold">{tokenRemPct}%</strong> (ใช้ไปแล้ว {(aiUsage.tokens.used || 0).toLocaleString()} Tokens / {tokenUsedPct}%)</span>
+                          <span>ใช้งานไปแล้ว: <strong className="text-blue-950 font-bold">{tokenUsedPct}%</strong> (คงเหลือ {aiUsage.tokens.remaining.toLocaleString()} Tokens / {tokenRemPct}%)</span>
                           <span>รีเซ็ตใน: <strong className="text-blue-900">{aiUsage.tokens.resetIn}</strong></span>
                         </div>
                       </div>
@@ -451,23 +451,23 @@ export default function SettingsPage() {
                       <div className="p-4 rounded-xl border border-purple-100 bg-purple-50/40 space-y-2">
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1 text-xs sm:text-sm font-semibold">
                           <span className="text-purple-900 flex items-center gap-1.5">
-                            <Cpu className="h-4 w-4 text-purple-600 shrink-0" /> 14,400 คำขอรายวันคงเหลือ (Requests/Day)
+                            <Cpu className="h-4 w-4 text-purple-600 shrink-0" /> โควต้าคำขอรายวัน (Requests/Day)
                           </span>
                           <span className="text-purple-700 font-mono">
-                            {aiUsage.requests.remaining.toLocaleString()} / {aiUsage.requests.limit.toLocaleString()} ครั้ง
+                            {(aiUsage.requests.used || 0).toLocaleString()} / {aiUsage.requests.limit.toLocaleString()} ครั้ง
                           </span>
                         </div>
 
-                        {/* Progress Bar representing Capacity Remaining */}
+                        {/* Progress Bar representing Capacity Used */}
                         <div className="w-full bg-slate-200 h-3.5 rounded-full overflow-hidden p-0.5 border border-slate-300/60 shadow-inner">
                           <div
-                            className={`h-2.5 rounded-full transition-all duration-500 ${getMeterColor(reqRemPct)}`}
-                            style={{ width: `${reqRemPct}%` }}
+                            className={`h-2.5 rounded-full transition-all duration-500 ${getMeterColor(reqUsedPct)}`}
+                            style={{ width: `${reqUsedPct}%` }}
                           />
                         </div>
 
                         <div className="flex justify-between items-center text-xs font-medium text-purple-800 pt-1">
-                          <span>ความจุคงเหลือ: <strong className="text-purple-950 font-bold">{reqRemPct}%</strong> (ใช้ไปแล้ว {aiUsage.requests.used || 0} ครั้ง / {reqUsedPct}%)</span>
+                          <span>ใช้งานไปแล้ว: <strong className="text-purple-950 font-bold">{reqUsedPct}%</strong> (คงเหลือ {aiUsage.requests.remaining.toLocaleString()} ครั้ง / {reqRemPct}%)</span>
                           <span>รีเซ็ตใน: <strong className="text-purple-900">{aiUsage.requests.resetIn}</strong></span>
                         </div>
                       </div>
@@ -478,8 +478,8 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 w-full">
                   <div className="p-4 rounded-xl border border-gray-200 bg-white">
                     <span className="text-xs text-gray-500 font-medium">ผู้ให้บริการ AI (AI Provider)</span>
-                    <p className="text-base font-bold text-gray-800 mt-1">Groq Cloud AI</p>
-                    <span className="text-xs text-green-600 font-medium mt-1 inline-block">สตรีมมิ่งตอบเร็วที่สุด ~0.12s</span>
+                    <p className="text-base font-bold text-gray-800 mt-1">{aiUsage?.provider || 'Groq Cloud AI'}</p>
+                    <span className="text-xs text-green-600 font-medium mt-1 inline-block">สถานะ: {aiUsage?.status || 'online'}</span>
                   </div>
 
                   <div className="p-4 rounded-xl border border-gray-200 bg-white">

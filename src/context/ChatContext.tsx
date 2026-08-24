@@ -427,21 +427,31 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           } catch {}
         }
 
-        let cleanedAnswer = fullAnswer.replace(/^<think>[\s\S]*?<\/think>/gi, '');
-        if (/^[A-Za-z\s"'(),.:;!\-?]{15,}/.test(cleanedAnswer)) {
-          const linesArr = cleanedAnswer.split('\n');
-          let firstThaiIdx = -1;
-          for (let i = 0; i < linesArr.length; i++) {
-            const line = linesArr[i].trim();
-            if (/[\u0E00-\u0E7F]/.test(line) && !/^(The user|We need|We have|Let's|Provide|This is|In this|I should|As an AI)/i.test(line)) {
-              firstThaiIdx = i;
-              break;
+        let cleanedAnswer = fullAnswer;
+        
+        if (cleanedAnswer.startsWith('<think>') && !cleanedAnswer.includes('</think>')) {
+          cleanedAnswer = 'กำลังประมวลผลข้อมูล (Thinking)...';
+        } else {
+          cleanedAnswer = cleanedAnswer.replace(/<think>[\s\S]*?<\/think>/gi, '');
+          
+          if (cleanedAnswer.includes('<answer>')) {
+            cleanedAnswer = cleanedAnswer.split('<answer>')[1];
+            if (cleanedAnswer.includes('</answer>')) {
+              cleanedAnswer = cleanedAnswer.split('</answer>')[0];
+            }
+          } else {
+            if (cleanedAnswer.length > 10 && !/[\u0E00-\u0E7F]/.test(cleanedAnswer.substring(0, Math.min(cleanedAnswer.length, 100)))) {
+              const match = cleanedAnswer.match(/(<answer>|#{1,6}\s*[\u0E00-\u0E7F]|[\u0E00-\u0E7F]{2,})/);
+              if (match && match.index !== undefined) {
+                cleanedAnswer = cleanedAnswer.substring(match.index);
+              } else if (cleanedAnswer.length < 300) {
+                cleanedAnswer = ''; // ซ่อนระหว่างรอ
+              }
             }
           }
-          if (firstThaiIdx > 0) {
-            cleanedAnswer = linesArr.slice(firstThaiIdx).join('\n');
-          }
         }
+        
+        cleanedAnswer = cleanedAnswer.replace(/^(Let's craft answer|Wrap in|tags\.).*?(?=\n|$)/gmi, '');
         cleanedAnswer = cleanedAnswer.trim();
 
         setMessages((prev) =>
@@ -458,6 +468,32 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           const data = JSON.parse(buffer);
           if (data.type === 'token' && data.content) {
             fullAnswer += data.content;
+            
+            // Final cleanup pass for the remainder
+            let cleanedAnswer = fullAnswer.replace(/<think>[\s\S]*?<\/think>/gi, '');
+            if (cleanedAnswer.includes('<answer>')) {
+              cleanedAnswer = cleanedAnswer.split('<answer>')[1];
+              if (cleanedAnswer.includes('</answer>')) {
+                cleanedAnswer = cleanedAnswer.split('</answer>')[0];
+              }
+            } else {
+              const match = cleanedAnswer.match(/(?:^|\n)(#{1,6}\s*[\u0E00-\u0E7F]|[\u0E00-\u0E7F]{3,})/);
+              if (match && match.index !== undefined) {
+                const prefix = cleanedAnswer.substring(0, match.index);
+                if (!/[\u0E00-\u0E7F]/.test(prefix) || prefix.length > 50) {
+                  cleanedAnswer = cleanedAnswer.substring(match.index);
+                }
+              }
+            }
+            cleanedAnswer = cleanedAnswer.replace(/^(Let's craft answer|Wrap in|tags\.).*?(?=\n|$)/gmi, '').trim();
+            
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId
+                  ? { ...msg, content: cleanedAnswer, sources: extractedSources }
+                  : msg
+              )
+            );
           }
         } catch {}
       }
