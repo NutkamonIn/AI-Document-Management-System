@@ -108,6 +108,9 @@ export async function POST(req: Request) {
     }
 
     const sources: { documentName: string; pageNumber: number }[] = [];
+    const matchedPageKeys = new Set(relevantChunks.map((c) => `${c.documentId}_${c.pageNumber}`));
+    const targetDocIds = Array.from(new Set(relevantChunks.map((c) => c.documentId)));
+
     const contextText = relevantChunks
       .map((c, i) => {
         sources.push({ documentName: c.documentName, pageNumber: c.pageNumber });
@@ -117,18 +120,19 @@ export async function POST(req: Request) {
 
     const uniqueSources = Array.from(new Set(sources.map((s) => `${s.documentName} (หน้า ${s.pageNumber})`)));
 
-    // ดึงคลังรูปภาพประกอบจริงทั้งหมดผ่าน Raw SQL Query เพื่อข้าม Prisma Client Cache 100%
-    const targetDocIds = Array.from(new Set(relevantChunks.map((c) => c.documentId)));
-    let docImages: { id: string; pageNumber: number }[] = [];
+    // ดึงเฉพาะรูปภาพประกอบตรงกับเลขหน้าของ chunks ที่ค้นพบจริงเท่านั้น
+    let docImages: { id: string; pageNumber: number; documentId: string }[] = [];
 
     try {
       if (targetDocIds.length > 0) {
         const escapedDocIds = targetDocIds.map((id) => `'${id.replace(/'/g, "''")}'`).join(',');
         const rows = await (prisma as any).$queryRawUnsafe(
-          `SELECT "id", "pageNumber" FROM "DocumentImage" WHERE "documentId" IN (${escapedDocIds}) ORDER BY "pageNumber" ASC`
+          `SELECT "id", "pageNumber", "documentId" FROM "DocumentImage" WHERE "documentId" IN (${escapedDocIds}) ORDER BY "pageNumber" ASC`
         );
         if (Array.isArray(rows)) {
-          docImages = rows.map((r: any) => ({ id: r.id, pageNumber: Number(r.pageNumber) }));
+          docImages = rows
+            .map((r: any) => ({ id: r.id, pageNumber: Number(r.pageNumber), documentId: r.documentId }))
+            .filter((img) => matchedPageKeys.has(`${img.documentId}_${img.pageNumber}`));
         }
       }
     } catch (err) {
@@ -138,7 +142,7 @@ export async function POST(req: Request) {
     let imageGalleryPrompt = '';
     if (docImages.length > 0) {
       imageGalleryPrompt =
-        '\n\n--- รายชื่อแท็กรูปภาพประกอบจริงที่มีในเอกสาร (เลือกแสดงแท็กรูปภาพเหล่านี้ประกอบคำตอบ) ---\n' +
+        '\n\n--- รายชื่อแท็กรูปภาพประกอบที่ตรงกับหน้าเอกสารอ้างอิงข้างต้น ---\n' +
         docImages
           .map((img) => `![ภาพประกอบ หน้า ${img.pageNumber}](/api/documents/images/${img.id})`)
           .join('\n');
@@ -148,8 +152,8 @@ export async function POST(req: Request) {
 - ตอบคำถามให้ครบถ้วน ละเอียด สมบูรณ์ที่สุด ห้ามตัดจบกลางคราว ห้ามละเว้นหัวข้อสำคัญ และอธิบายหัวข้อต่างๆ ให้ชัดเจนอ่านง่าย
 - จัดรูปแบบคำตอบให้สวยงาม ใช้หัวข้อ (Markdown Headers), ตาราง (Markdown Tables), และรายการข้อๆ (Bullet points) 
 - ห้ามใส่อิโมจิในคำตอบเด็ดขาด
-- หากมีแท็กรูปภาพในรูปแบบ ![alt](url) ให้คงแท็กรูปภาพนั้นไว้ และนำแท็กรูปภาพ ![alt](url) มาแสดงประกอบคำตอบในตำแหน่งที่เกี่ยวข้องเสมอ
-- หากผู้ขอให้แสดงรูปภาพ แนบภาพ หรือสรุปเอกสารที่มีภาพประกอบ ให้เลือกแท็กรูปภาพ ![alt](url) จากคลังรูปภาพด้านล่างมารวมไว้ในกล่องคำตอบเสมอ
+- หากมีแท็กรูปภาพในรูปแบบ ![alt](url) ที่ตรงกับเนื้อหาในหน้าเอกสารนั้น ให้คงแท็กรูปภาพนั้นไว้ และนำแท็กรูปภาพมาแสดงประกอบคำตอบในตำแหน่งที่เกี่ยวข้องเสมอ
+- แสดงเฉพาะแท็กรูปภาพ ![alt](url) ที่ตรงกับหน้าเอกสารในเนื้อหาอ้างอิงเท่านั้น ห้ามแสดงรูปภาพจากหน้าอื่นที่ไม่เกี่ยวข้องกับคำถามเด็ดขาด
 - หากมีข้อมูลในเอกสารอ้างอิง ให้สรุปคำตอบจากข้อมูลจริงนั้นทันที และห้ามต่อท้ายด้วยประโยคปฏิเสธเด็ดขาด
 - เฉพาะกรณีที่ในเอกสารไม่มีข้อมูลเกี่ยวกับคำถามเลยจริงๆ ให้ตอบว่า "ไม่พบข้อมูลนี้ในเอกสารที่คุณอัปโหลดไว้"
 

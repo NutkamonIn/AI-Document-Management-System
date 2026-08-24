@@ -35,7 +35,7 @@ async function extractImagesFromDict(
 
       if (subtype === PDFName.of('Image')) {
         const contents = typeof xObject.getContents === 'function' ? xObject.getContents() : null;
-        if (contents && contents.length > 500) {
+        if (contents && contents.length > 10000) {
           let finalBuffer: Buffer | null = null;
           let mimeType = 'image/jpeg';
 
@@ -53,7 +53,7 @@ async function extractImagesFromDict(
               const width = widthObj?.numberValue || widthObj?.value || widthObj;
               const height = heightObj?.numberValue || heightObj?.value || heightObj;
 
-              if (width && height && typeof width === 'number' && typeof height === 'number') {
+              if (width && height && typeof width === 'number' && typeof height === 'number' && width >= 80 && height >= 80) {
                 let channels = 3;
                 if (unzipped.length === width * height * 4) channels = 4;
                 else if (unzipped.length === width * height * 1) channels = 1;
@@ -71,7 +71,7 @@ async function extractImagesFromDict(
             }
           }
 
-          if (finalBuffer && finalBuffer.length > 500) {
+          if (finalBuffer && finalBuffer.length > 10000) {
             const base64 = finalBuffer.toString('base64');
             const dataUrl = `data:${mimeType};base64,${base64}`;
 
